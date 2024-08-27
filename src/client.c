@@ -6,7 +6,7 @@
 /*   By: akostian <akostian@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/19 15:26:27 by akostian          #+#    #+#             */
-/*   Updated: 2024/08/19 18:14:51 by akostian         ###   ########.fr       */
+/*   Updated: 2024/08/27 20:23:21 by akostian         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void	send_char(pid_t pid, char chr)
 			kill(pid, SIGUSR1);
 		else
 			kill(pid, SIGUSR2);
-		usleep(1000 * 0.2);
+		usleep(1000 * 1);
 	}
 }
 
@@ -46,12 +46,12 @@ int	main(int argc, char **argv)
 	if (!ft_strlen(text))
 		return (ft_printf("STRING IS EMPTY\n"), 1);
 	pid = ft_atoi(argv[1]);
-	ft_printf("Sent: \"%s\"", text);
 	while (*text)
 	{
 		send_char(pid, *text);
 		text++;
 	}
-	ft_printf("\n");
+	send_char(pid, 0);
+	ft_printf("Sent: \"%s\"\n", argv[2]);
 	return (0);
 }

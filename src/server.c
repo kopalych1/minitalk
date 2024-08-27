@@ -6,27 +6,71 @@
 /*   By: akostian <akostian@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/19 15:25:31 by akostian          #+#    #+#             */
-/*   Updated: 2024/08/19 18:15:43 by akostian         ###   ########.fr       */
+/*   Updated: 2024/08/27 21:28:51 by akostian         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minitalk.h"
 
+#define BUFFER_SIZE 16
+
+int	append_str(char **str1, char *str2)
+{
+	char	*old_str1;
+
+	old_str1 = *str1;
+	*str1 = ft_strjoin(*str1, str2);
+	if (!*str1)
+		return (-1);
+	free(old_str1);
+	return (0);
+}
+
+int	if_is_last(
+		char chr,
+		char **result,
+		char buffer[BUFFER_SIZE + 1],
+		int *buffer_index
+)
+{
+	if (!chr)
+	{
+		if (append_str(result, buffer) == -1)
+			return (ft_printf("MALLOC ERROR\n"), free(*result), -1);
+		ft_printf("%s\n", *result);
+		free(*result);
+		*result = NULL;
+		*buffer_index = 0;
+	}
+	return (0);
+}
+
 void	signal_handler(int signum, siginfo_t *info, void *context)
 {
 	static char		chr = 0;
-	static int		i = 0;
+	static int		chr_iterator = 0;
+	static char		*result;
+	static char		buffer[BUFFER_SIZE + 1];
+	static int		buffer_index = 0;
 
 	(void)context;
 	(void)info;
-	i++;
+	chr_iterator++;
 	chr = (chr << 1) + (signum == 10);
-	if (i == 8)
+	if (chr_iterator != 8)
+		return ;
+	chr_iterator = 0;
+	buffer[buffer_index++] = chr;
+	if (buffer_index == BUFFER_SIZE)
 	{
-		ft_printf("%c", chr);
-		i = 0;
-		chr = 0;
+		buffer[buffer_index] = '\0';
+		if (append_str(&result, buffer) == -1)
+			return (ft_printf("MALLOC ERROR\n"), free(result));
+		buffer_index = 0;
 	}
+	if (if_is_last(chr, &result, buffer, &buffer_index) == -1)
+		return ;
+	chr = 0;
 }
 
 int	main(void)
