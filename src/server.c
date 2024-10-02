@@ -12,64 +12,21 @@
 
 #include "../include/minitalk.h"
 
-#define BUFFER_SIZE 16
-
-int	append_str(char **str1, char *str2)
-{
-	char	*old_str1;
-
-	old_str1 = *str1;
-	*str1 = ft_strjoin(*str1, str2);
-	if (!*str1)
-		return (-1);
-	free(old_str1);
-	return (0);
-}
-
-int	if_is_last(
-		char chr,
-		char **result,
-		char buffer[BUFFER_SIZE + 1],
-		int *buffer_index
-)
-{
-	if (!chr)
-	{
-		if (append_str(result, buffer) == -1)
-			return (ft_printf("MALLOC ERROR\n"), free(*result), -1);
-		ft_printf("%s\n", *result);
-		free(*result);
-		*result = NULL;
-		*buffer_index = 0;
-	}
-	return (0);
-}
-
 void	signal_handler(int signum, siginfo_t *info, void *context)
 {
-	static char		chr = 0;
-	static int		chr_iterator = 0;
-	static char		*result;
-	static char		buffer[BUFFER_SIZE + 1];
-	static int		buffer_index = 0;
+	static char				chr = 0;
+	static unsigned char	chr_iterator = 0;
 
 	(void)context;
-	(void)info;
-	chr_iterator++;
-	chr = (chr << 1) + (signum == 10);
-	if (chr_iterator != 8)
+	chr = (chr << 1) + (signum == SIGUSR1);
+	if (++chr_iterator != 8)
 		return ;
 	chr_iterator = 0;
-	buffer[buffer_index++] = chr;
-	if (buffer_index == BUFFER_SIZE)
-	{
-		buffer[buffer_index] = '\0';
-		if (append_str(&result, buffer) == -1)
-			return (ft_printf("MALLOC ERROR\n"), free(result));
-		buffer_index = 0;
-	}
-	if (if_is_last(chr, &result, buffer, &buffer_index) == -1)
-		return ;
+	if (!chr)
+		kill(info->si_pid, SIGUSR2);
+	else
+		kill(info->si_pid, SIGUSR1);
+	ft_putchar(chr);
 	chr = 0;
 }
 
@@ -84,6 +41,6 @@ int	main(void)
 	sigaction(SIGUSR2, &sa, NULL);
 	ft_printf("Server started with PID: %d\n", getpid());
 	while (1)
-		;
+		pause();
 	return (0);
 }
